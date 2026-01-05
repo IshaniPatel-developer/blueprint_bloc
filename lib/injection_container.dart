@@ -2,6 +2,9 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:get_it/get_it.dart';
+import 'core/network/api_client.dart';
+import 'core/network/api_config.dart';
+import 'core/network/dio_interceptors.dart';
 import 'core/network/network_info.dart';
 import 'features/auth/data/datasources/auth_remote_datasource.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
@@ -90,7 +93,7 @@ Future<void> initializeDependencies() async {
   );
 
   sl.registerLazySingleton<PostRemoteDataSource>(
-    () => PostRemoteDataSourceImpl(dio: sl()),
+    () => PostRemoteDataSourceImpl(apiClient: sl()),
   );
 
   sl.registerLazySingleton<PostLocalDataSource>(
@@ -103,6 +106,9 @@ Future<void> initializeDependencies() async {
 
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
 
+  // Register ApiClient with configured Dio instance
+  sl.registerLazySingleton<ApiClient>(() => ApiClient(sl()));
+
   // ================================
   // External - Third party libraries
   // ================================
@@ -110,9 +116,32 @@ Future<void> initializeDependencies() async {
   // Firebase Auth
   sl.registerLazySingleton(() => firebase_auth.FirebaseAuth.instance);
 
-  // Dio for HTTP requests
-  sl.registerLazySingleton(() => Dio());
+  // Dio for HTTP requests with interceptors
+  sl.registerLazySingleton(() => _configureDio());
 
   // Connectivity for network checking
   sl.registerLazySingleton(() => Connectivity());
+}
+
+/// Configure Dio instance with base options and interceptors.
+Dio _configureDio() {
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: ApiConfig.baseUrl,
+      connectTimeout: ApiConfig.connectTimeout,
+      receiveTimeout: ApiConfig.receiveTimeout,
+      sendTimeout: ApiConfig.sendTimeout,
+      headers: ApiConfig.defaultHeaders,
+    ),
+  );
+
+  // Add interceptors in order
+  dio.interceptors.addAll([
+    LoggingInterceptor(), // Log requests/responses
+    AuthInterceptor(), // Add auth tokens
+    ErrorInterceptor(), // Convert errors to custom exceptions
+    RetryInterceptor(), // Retry failed requests
+  ]);
+
+  return dio;
 }
