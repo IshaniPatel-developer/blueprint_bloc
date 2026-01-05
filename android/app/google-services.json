@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "613832828806",
+    "project_id": "blueprintbloc",
+    "storage_bucket": "blueprintbloc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:613832828806:android:493541ed26cd9756d86e07",
+        "android_client_info": {
+          "package_name": "com.example.blueprint_bloc"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANPP9Dj5sTnfsgmQmmVSSFYRZupGiWzzI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
